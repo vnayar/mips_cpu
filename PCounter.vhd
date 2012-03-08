@@ -25,8 +25,8 @@ BEGIN
     IF (resetb = '0') THEN
       program_counter <= X"0000";
     ELSIF rising_edge(clk) THEN
-      IF (program_counter = X"0001") THEN
-        program_counter <= X"0001";
+      IF (program_counter = X"0003") THEN
+        program_counter <= X"0003";
       ELSE
         program_counter <= pc_in;
       END IF;

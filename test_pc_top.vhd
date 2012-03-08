@@ -6,7 +6,11 @@ USE ieee.std_logic_unsigned.all ;
 ENTITY test_pc_top IS
   PORT (
     resetb : in std_logic;
-    clk : in std_logic
+    clk : in std_logic;
+    -- FIXME: Test ports until Control Unit is implemented.
+    reg_wr_en : in std_logic;
+    ram_wr_en : in std_logic;
+    alu_ctrl : in std_logic_vector (2 downto 0)
   );
 END;
 
@@ -104,15 +108,14 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
   signal alu_result : std_logic_vector (31 downto 0);
   signal zero_flag : std_logic;
   -- RAM
-  signal ram_wr_en : std_logic;
-  signal ram_din : std_logic_vector(31 downto 0);
+  --signal ram_wr_en : std_logic;
+  --signal ram_din : std_logic_vector(31 downto 0);
   signal ram_dout : std_logic_vector(31 downto 0);
 
   -- FIXME: Temporary signals.
-  signal alu_ctrl : std_logic_vector (2 downto 0);
-  signal ra2 : std_logic_vector (4 downto 0);
-  signal wa3 : std_logic_vector (4 downto 0);
-  signal we3 : std_logic;
+  --signal alu_ctrl : std_logic_vector (2 downto 0);
+  --signal wa3 : std_logic_vector (4 downto 0);
+  --signal we3 : std_logic;
 
 
 BEGIN
@@ -126,12 +129,6 @@ BEGIN
   --   n/a
 
   pc_inc <= X"0001";
-  -- FIXME:  Temporary signals.
-  alu_ctrl <= "010"; -- Lock ALU to 'add' for LW test.
-  ra2 <= "00000"; -- We aren't using read 2 yet.
-  we3 <= '1'; -- Always write for LW.
-  ram_wr_en <= '0';
-  ram_din <= (others => '0');
 
   PCounter1 : PCounter
   port map (
@@ -165,13 +162,14 @@ BEGIN
     clk        => clk,
     -- The 'rs' part of the instruction
     ra1        => instr (25 downto 21),
-    ra2        => ra2,
+    -- The 'rt' part of the instruction
+    ra2        => instr (20 downto 16),
     rd1        => rd1,
     rd2        => rd2,
     -- The 'rt' part of the instruction is the dest for LW.
     wa3        => instr (20 downto 16),
     wd3        => ram_dout, -- Our data comes from the RAM.
-    we3        => we3
+    we3        => reg_wr_en
   );
 
   signex1 : SignExtend
@@ -198,7 +196,7 @@ BEGIN
     clk => clk,
     -- The ALU computes the address, data is read word (4 bytes) at a time.
     ram_addr => alu_result (31 downto 2),
-    ram_din => ram_din,
+    ram_din => rd2,
     ram_dout => ram_dout
   );
 

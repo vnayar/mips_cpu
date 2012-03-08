@@ -8,6 +8,8 @@ add wave -noupdate -radix hexadecimal /tb_mips/UUT/PCPlus/sum
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/ROM1/instr
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/signex1/instr_imm
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/signex1/sign_imm
+add wave -noupdate -radix hexadecimal /tb_mips/UUT/reg1/ra2
+add wave -noupdate -radix hexadecimal /tb_mips/UUT/reg1/rd2
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/reg1/wa3
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/reg1/wd3
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/reg1/we3
@@ -16,6 +18,8 @@ add wave -noupdate -radix hexadecimal /tb_mips/UUT/ALU1/src_b
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/ALU1/alu_ctrl
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/ALU1/alu_result
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/RAM1/ram_dout
+add wave -noupdate -radix hexadecimal /tb_mips/UUT/RAM1/ram_din
+add wave -noupdate -radix hexadecimal /tb_mips/UUT/RAM1/ram_wr_en
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {61448 ps} 0}
 configure wave -namecolwidth 197
