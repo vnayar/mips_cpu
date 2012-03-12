@@ -1,0 +1,12 @@
+A simple implementation of a MIPS processor.
+
+The current design is a single-cycle execution, unlike the pipe-lined
+model that is ubiquitous these days.
+
+Most of the code is written using VHDL (I may convert to Verilog later).
+
+Tools:
+  MIPS Simulator:  QtSpim
+    http://spimsimulator.sourceforge.net/
+  VHDL Simulator:  Altera ModelSim
+    http://www.altera.com/products/software/quartus-ii/modelsim/qts-modelsim-index.html
