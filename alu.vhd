@@ -14,14 +14,30 @@ ENTITY ALU IS
   );
 END ALU;
 
+-- Perform arithmetic operations depending upon alu_ctrl.
+--   alu_ctrl  operation
+--        000  and
+--        001  or
+--        010  add
+--        110  subtract
+--        111  set less than
 ARCHITECTURE behavioral OF ALU IS
+
+  signal alu_result_temp : std_logic_vector (31 downto 0);
+  signal alu_less_than : std_logic;
 
 BEGIN
 
-  zero_flag <= '0';
+  alu_less_than <= '1' when src_a < src_b else '0';
+  zero_flag <= '1' when alu_result_temp = X"00000000" else '0';
+  alu_result <= alu_result_temp;
 
-  WITH alu_ctrl SELECT alu_result <=
+  WITH alu_ctrl SELECT alu_result_temp <=
+    src_a and src_b  WHEN "000",
+    src_a or src_b   WHEN "001",
     src_a + src_b    WHEN "010",
+    src_a - src_b    WHEN "110",
+    (0 => alu_less_than, others => '0') WHEN "111",
     (others => '0')  WHEN others;
 
 END behavioral;

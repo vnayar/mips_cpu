@@ -6,21 +6,44 @@ USE ieee.std_logic_unsigned.all ;
 ENTITY test_pc_top IS
   PORT (
     resetb : in std_logic;
-    clk : in std_logic;
-    -- FIXME: Test ports until Control Unit is implemented.
-    reg_wr_en : in std_logic;
-    ram_wr_en : in std_logic;
-    alu_ctrl : in std_logic_vector (2 downto 0)
+    clk : in std_logic
   );
 END;
 
 ARCHITECTURE pc_test_arch of test_pc_top IS
+  COMPONENT ControlUnit IS
+    PORT (
+      opcode : in std_logic_vector (5 downto 0);
+      funct : in std_logic_vector (5 downto 0);
+      
+      reg_wr_en : out std_logic;
+      reg_dst : out std_logic;
+      alu_src : out std_logic;
+
+      alu_ctrl : out std_logic_vector (2 downto 0);
+      ram_wr_en : out std_logic;
+      ram_to_reg : out std_logic;
+      branch : out std_logic
+    );
+  END COMPONENT;
+
   COMPONENT PCounter
     PORT (
       clk : in std_logic;
       resetb : in std_logic; 
-      pc_in : in std_logic_vector (15 downto 0);
-      pc_out : out std_logic_vector (15 downto 0)
+      pc_in : in std_logic_vector (31 downto 0);
+      pc_out : out std_logic_vector (31 downto 0)
+    );
+  END COMPONENT;
+  
+  COMPONENT Mux2 
+    GENERIC (
+      size : positive
+    );
+    PORT (
+      d0, d1 : in std_logic_vector (size - 1 downto 0);
+      s : in std_logic;
+      y : out std_logic_vector (size - 1 downto 0)
     );
   END COMPONENT;
 
@@ -37,7 +60,7 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
 
   COMPONENT ROM
     PORT (
-      pc : in std_logic_vector (15 downto 0);
+      pc : in std_logic_vector (31 downto 0);
       resetb : in std_logic;
       clk : in std_logic;
       instr : out std_logic_vector (31 downto 0)
@@ -92,31 +115,37 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
       ram_dout     : out std_logic_vector (M - 1 downto 0)
     );
   END COMPONENT;
+  
 
-
-
-  signal pc : std_logic_vector (15 downto 0);
-  signal pc_next : std_logic_vector (15 downto 0);
-  signal pc_inc : std_logic_vector (15 downto 0);
+  signal pc : std_logic_vector (31 downto 0);
+  signal pc_plus : std_logic_vector (31 downto 0);
+  signal pc_inc : std_logic_vector (31 downto 0);
+  signal pc_branch : std_logic_vector (31 downto 0);
+  signal pc_next : std_logic_vector (31 downto 0);
   signal instr : std_logic_vector (31 downto 0);
   -- The immediate part of the instruction expanded.
   signal sign_imm : std_logic_vector (31 downto 0);
+  signal sign_imm_shift2 : std_logic_vector (31 downto 0);
   -- The read-data from the register-file.
   signal rd1 : std_logic_vector (31 downto 0);
   signal rd2 : std_logic_vector (31 downto 0);
+  signal write_reg : std_logic_vector (4 downto 0);
   -- ALU Output
+  signal src_b : std_logic_vector (31 downto 0);
   signal alu_result : std_logic_vector (31 downto 0);
   signal zero_flag : std_logic;
   -- RAM
-  --signal ram_wr_en : std_logic;
-  --signal ram_din : std_logic_vector(31 downto 0);
   signal ram_dout : std_logic_vector(31 downto 0);
-
-  -- FIXME: Temporary signals.
-  --signal alu_ctrl : std_logic_vector (2 downto 0);
-  --signal wa3 : std_logic_vector (4 downto 0);
-  --signal we3 : std_logic;
-
+  signal result : std_logic_vector (31 downto 0);
+  -- Control Unit
+  signal reg_wr_en : std_logic;
+  signal reg_dst : std_logic;
+  signal alu_src : std_logic;
+  signal alu_ctrl : std_logic_vector (2 downto 0);
+  signal ram_wr_en : std_logic;
+  signal ram_to_reg : std_logic;
+  signal branch : std_logic;
+  signal pc_src : std_logic;
 
 BEGIN
   -- R-Type Instruction (000000 opcodes):
@@ -127,8 +156,33 @@ BEGIN
   --   opcode[6] target[26]
   -- Coprocessor Instruction (0100xx opcodes):
   --   n/a
+  control_unit : ControlUnit
+  port map (
+    opcode => instr (31 downto 26),
+    funct => instr (5 downto 0),
+    reg_wr_en => reg_wr_en,
+    reg_dst => reg_dst,
+    alu_src => alu_src,
+    alu_ctrl => alu_ctrl,
+    ram_wr_en => ram_wr_en,
+    ram_to_reg => ram_to_reg,
+    branch => branch
+  );
 
-  pc_inc <= X"0001";
+  pc_inc <= X"00000004";
+
+  pc_src <= '1' when (zero_flag = '1') and (branch = '1') else '0';
+
+  pc_src_mux : Mux2
+  generic map (
+    size => 32
+  )
+  port map (
+    d0 => pc_plus,
+    d1 => pc_branch,
+    s => pc_src,
+    y => pc_next
+  );
 
   PCounter1 : PCounter
   port map (
@@ -140,12 +194,12 @@ BEGIN
 
   PCPlus : adder
   generic map (
-    S => 16
+    S => 32
   )
   port map (
     src_a => pc,
     src_b => pc_inc,
-    sum => pc_next
+    sum => pc_plus
   );
 
   ROM1 : ROM
@@ -166,9 +220,8 @@ BEGIN
     ra2        => instr (20 downto 16),
     rd1        => rd1,
     rd2        => rd2,
-    -- The 'rt' part of the instruction is the dest for LW.
-    wa3        => instr (20 downto 16),
-    wd3        => ram_dout, -- Our data comes from the RAM.
+    wa3        => write_reg,
+    wd3        => result,
     we3        => reg_wr_en
   );
 
@@ -179,12 +232,52 @@ BEGIN
     sign_imm => sign_imm
   );
 
+  -- Convert immediate to instruction number by left-shifting by 2.
+  sign_imm_shift2 <= sign_imm (29 downto 0) & "00";
+
+  pc_branch_adder : adder
+  generic map (
+    S => 32
+  )
+  port map (
+    src_a => sign_imm_shift2,
+    src_b => pc,
+    sum => pc_branch
+  );
+
+
+  -- Controls if 'rt' or 'rd' will be used as the register write address
+  reg_dst_mux : Mux2
+  generic map (
+    size => 5
+  )
+  port map (
+    -- The 'rt' part of the instruction
+    d0 => instr (20 downto 16),
+    -- The 'rd' part of the instruction
+    d1 => instr (15 downto 11),
+    s => reg_dst,
+    y => write_reg
+  );
+
+  -- Controls if 'rt' or the instruction immediate will go to the ALU
+  alu_src_mux : Mux2
+  generic map (
+    size => 32
+  )
+  port map (
+    d0 => rd2,
+    d1 => sign_imm,
+    s => alu_src,
+    y => src_b
+  );
+
   ALU1 : ALU
   port map (
     resetb => resetb,
     clk => clk,
     src_a => rd1,
-    src_b => sign_imm,
+    src_b => src_b,
     alu_ctrl => alu_ctrl,
     alu_result => alu_result,
     zero_flag => zero_flag
@@ -199,5 +292,18 @@ BEGIN
     ram_din => rd2,
     ram_dout => ram_dout
   );
+
+  -- Controls whether the ALU or the RAM output will be write a to the register.
+  ram_to_reg_mux : Mux2
+  generic map (
+    size => 32
+  )
+  port map (
+    d0 => alu_result,
+    d1 => ram_dout,
+    s => ram_to_reg,
+    y => result
+  );
+
 
 END pc_test_arch;

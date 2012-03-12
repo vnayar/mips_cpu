@@ -18,30 +18,30 @@ main:
 init:
   # Set value of numbers_len = 40 (10 * 4)
   la $t1, numbers_len
-  li $t0, 40
+  addi $t0, $0, 40
   sw $t0, ($t1)
   # Load address of 'numbers' into t1.
   la $t1, numbers
   # The 'load-imediate' instruction can be simulated with add 0.
-  li $t0, 5
+  addi $t0, $0, 5
   sw $t0, 0($t1)  # numbers[0] = 5
-  li $t0, 7
+  addi $t0, $0, 7
   sw $t0, 4($t1)  # numbers[1] = 7
-  li $t0, 3
+  addi $t0, $0, 3
   sw $t0, 8($t1)  # numbers[2] = 3
-  li $t0, 2
+  addi $t0, $0, 2
   sw $t0, 12($t1)  # numbers[3] = 2
-  li $t0, 9
+  addi $t0, $0, 9
   sw $t0, 16($t1)  # numbers[4] = 9
-  li $t0, 4
+  addi $t0, $0, 4
   sw $t0, 20($t1)  # numbers[5] = 4
-  li $t0, 1
+  addi $t0, $0, 1
   sw $t0, 24($t1)  # numbers[6] = 1
-  li $t0, 8
+  addi $t0, $0, 8
   sw $t0, 28($t1)  # numbers[7] = 8
-  li $t0, 6
+  addi $t0, $0, 6
   sw $t0, 32($t1)  # numbers[8] = 6
-  li $t0, 0
+  addi $t0, $0, 0
   sw $t0, 36($t1)  # numbers[9] = 0
 
 # for (int i = 0; i < numbers.length; i++) {
