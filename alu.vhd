@@ -16,10 +16,11 @@ END ALU;
 
 -- Perform arithmetic operations depending upon alu_ctrl.
 --   alu_ctrl  operation
---        000  and
---        001  or
---        010  add
---        110  subtract
+--        000  A & B
+--        001  A | B
+--        010  A + B
+--        100  A & ~B
+--        110  A - B
 --        111  set less than
 ARCHITECTURE behavioral OF ALU IS
 

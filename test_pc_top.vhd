@@ -23,7 +23,9 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
       alu_ctrl : out std_logic_vector (2 downto 0);
       ram_wr_en : out std_logic;
       ram_to_reg : out std_logic;
-      branch : out std_logic
+      branch : out std_logic;
+      bzf : out std_logic;
+      jump : out std_logic
     );
   END COMPONENT;
 
@@ -61,8 +63,6 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
   COMPONENT ROM
     PORT (
       pc : in std_logic_vector (31 downto 0);
-      resetb : in std_logic;
-      clk : in std_logic;
       instr : out std_logic_vector (31 downto 0)
     );
   END COMPONENT;
@@ -120,7 +120,7 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
   signal pc : std_logic_vector (31 downto 0);
   signal pc_plus : std_logic_vector (31 downto 0);
   signal pc_inc : std_logic_vector (31 downto 0);
-  signal pc_branch : std_logic_vector (31 downto 0);
+  signal pc_branch_addr : std_logic_vector (31 downto 0);
   signal pc_next : std_logic_vector (31 downto 0);
   signal instr : std_logic_vector (31 downto 0);
   -- The immediate part of the instruction expanded.
@@ -145,7 +145,11 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
   signal ram_wr_en : std_logic;
   signal ram_to_reg : std_logic;
   signal branch : std_logic;
+  signal bzf : std_logic;
   signal pc_src : std_logic;
+  signal pc_branch_plus : std_logic_vector (31 downto 0);
+  signal jump : std_logic;
+  signal pc_jump : std_logic_vector (31 downto 0);
 
 BEGIN
   -- R-Type Instruction (000000 opcodes):
@@ -166,21 +170,38 @@ BEGIN
     alu_ctrl => alu_ctrl,
     ram_wr_en => ram_wr_en,
     ram_to_reg => ram_to_reg,
-    branch => branch
+    branch => branch,
+    bzf => bzf,
+    jump => jump
   );
 
   pc_inc <= X"00000004";
 
-  pc_src <= '1' when (zero_flag = '1') and (branch = '1') else '0';
+  pc_src <= '1' when (branch = '1') and ((zero_flag xor bzf) = '0') else '0';
 
-  pc_src_mux : Mux2
+  pc_branch_plus_mux : Mux2
   generic map (
     size => 32
   )
   port map (
     d0 => pc_plus,
-    d1 => pc_branch,
+    d1 => pc_branch_addr,
     s => pc_src,
+    y => pc_branch_plus
+  );
+
+  -- Read the jump immediate from the instruction and pc.
+  --   PC = (PC & 0xF0000000) | (jump_imm << 2)
+  pc_jump <= pc (31 downto 28) & instr (25 downto 0) & "00";
+
+  pc_jump_mux : Mux2
+  generic map (
+    size => 32
+  )
+  port map (
+    d0 => pc_branch_plus,
+    d1 => pc_jump,
+    s => jump,
     y => pc_next
   );
 
@@ -205,8 +226,6 @@ BEGIN
   ROM1 : ROM
   port map (
     pc => pc,
-    resetb => resetb,
-    clk => clk,
     instr => instr
   );
 
@@ -242,7 +261,7 @@ BEGIN
   port map (
     src_a => sign_imm_shift2,
     src_b => pc,
-    sum => pc_branch
+    sum => pc_branch_addr
   );
 
 

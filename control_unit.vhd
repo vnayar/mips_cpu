@@ -13,7 +13,9 @@ ENTITY ControlUnit IS
     alu_ctrl : out std_logic_vector (2 downto 0);
     ram_wr_en : out std_logic;
     ram_to_reg : out std_logic;
-    branch : out std_logic
+    branch : out std_logic;
+    bzf : out std_logic;
+    jump : out std_logic
   );
 END ControlUnit;
 
@@ -25,11 +27,13 @@ ARCHITECTURE struct of ControlUnit IS
       ram_to_reg : out std_logic;
       ram_wr_en : out std_logic;
       branch : out std_logic;
+      bzf : out std_logic;
       alu_src : out std_logic;
       reg_dst : out std_logic;
       reg_wr_en : out std_logic;
       -- Provide high level controls to ALU Decoder.
-      alu_op : out std_logic_vector (1 downto 0)
+      alu_op : out std_logic_vector (2 downto 0);
+      jump : out std_logic
     );
   END COMPONENT;
   
@@ -38,13 +42,13 @@ ARCHITECTURE struct of ControlUnit IS
       -- The leading opcode bits of the instruction.
       funct : in std_logic_vector (5 downto 0);
       -- The general type of operation from the MainDecoder.
-      alu_op : in std_logic_vector (1 downto 0);
+      alu_op : in std_logic_vector (2 downto 0);
       -- Specify the arithmetic operator for the ALU.
       alu_ctrl : out std_logic_vector (2 downto 0)
     );
   END COMPONENT;
 
-  signal alu_op : std_logic_vector (1 downto 0);
+  signal alu_op : std_logic_vector (2 downto 0);
 
 BEGIN
 
@@ -54,10 +58,12 @@ BEGIN
     ram_to_reg => ram_to_reg,
     ram_wr_en => ram_wr_en,
     branch => branch,
+    bzf => bzf,
     alu_src => alu_src,
     reg_dst => reg_dst,
     reg_wr_en => reg_wr_en,
-    alu_op => alu_op
+    alu_op => alu_op,
+    jump => jump
   );
 
   alu_decoder : ALUDecoder
