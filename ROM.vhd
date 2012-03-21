@@ -6,7 +6,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity ROM is
    generic( N    : integer := 32;  -- number of address bits
             M    : integer := 32;  -- number of bits in an instruction
-            W    : integer := 21); -- number of instructions
+            W    : integer := 27); -- number of instructions
    port( pc      : in std_logic_vector (N-1 downto 0);  -- program counter
          instr   : out std_logic_vector(M-1 downto 0)); -- instructions
 end ROM;
@@ -43,7 +43,14 @@ architecture behavior of ROM is
     X"00000000",
     -- LUI Test
     X"3c091001", -- lui $9, 4097 [numbers]   ; la $t1, numbers 
-    X"21292002"  -- addi $9, $9, 8194        ; addi $t1, $t1, 8094 
+    X"21292002", -- addi $9, $9, 8194        ; addi $t1, $t1, 8094 
+    -- SLT Test
+    X"20080005", -- addi $8, $0, 5           ; 1: addi $t0, $0, 5 
+    X"20090007", -- addi $9, $0, 7           ; 2: addi $t1, $0, 7 
+    X"0109502a", -- slt $10, $8, $9          ; 3: slt $t2, $t0, $t1 
+    X"0128502a", -- slt $10, $9, $8          ; 4: slt $t2, $t1, $t0 
+    X"290a0007", -- slti $10, $8, 7          ; 5: slti $t2, $t0, 7 
+    X"292a0005"  -- slti $10, $9, 5          ; 6: slti $t2, $t1, 5 
   );
                                     
 begin

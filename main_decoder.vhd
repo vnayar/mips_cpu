@@ -61,6 +61,7 @@ END MainDecoder;
 --   Instruction  Opcode  reg_wr_en  reg_dst  alu_src  branch  bzf ram_wr_en  ram_to_reg  alu_op  jump  shift_imm
 --   R-Type       000000          1        1        0       0    X         0           0     011     0          0
 --   addi         001000          1        0        1       0    X         0           0     000     0          0
+--   slti         001010          1        0        1       0    X         0           0     111     0          0
 --   ori          001101          1        0        1       0    X         0           0     010     0          0
 --   lw           100011          1        0        1       0    X         0           1     000     0          0
 --   sw           101011          0        X        1       0    X         1           X     000     0          X
@@ -71,9 +72,10 @@ END MainDecoder;
 ARCHITECTURE synth OF MainDecoder IS
 BEGIN
   reg_wr_en <= '1' when (opcode = "000000") or (opcode = "100011") or (opcode = "001000") or
-                        (opcode = "001101") or (opcode = "001111") else '0';
+                        (opcode = "001101") or (opcode = "001111") or (opcode = "001010") else '0';
   reg_dst <= '1' when (opcode = "000000") else '0';
-  alu_src <= '1' when (opcode = "001000") or (opcode = "100011") or (opcode = "101011") or (opcode = "001111") else '0';
+  alu_src <= '1' when (opcode = "001000") or (opcode = "100011") or (opcode = "101011") or
+                      (opcode = "001111") or (opcode = "001010") else '0';
   branch <= '1' when (opcode (5 downto 1) = "00010") else '0';
   bzf <= '1' when (opcode (0) = '0') else '0';
   ram_wr_en <= '1' when (opcode = "101011") else '0';
@@ -81,6 +83,7 @@ BEGIN
   alu_op <= "001" when (opcode (5 downto 1) = "00010") else -- sub (for beq)
             "010" when (opcode = "001101") or (opcode = "001111") else -- ori
             "011" when (opcode = "000000") else -- R-Type
+            "111" when (opcode = "001010") else -- slti
             "000" when (opcode = "001000") else -- addi
             "000";
   jump <= '1' when (opcode = "000010") else '0';

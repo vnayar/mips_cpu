@@ -29,7 +29,7 @@ ARCHITECTURE behavior of RAM IS
 
 BEGIN
   -- Read is combinatorial.
-  ram_dout <= memory(conv_integer(ram_addr)) when (conv_integer(ram_addr) < M) else
+  ram_dout <= memory(conv_integer(ram_addr)) when (conv_integer(ram_addr) < W) else
     X"00000000";
 
   -- Write is sequential.
