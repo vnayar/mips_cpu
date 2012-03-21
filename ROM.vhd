@@ -6,7 +6,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity ROM is
    generic( N    : integer := 32;  -- number of address bits
             M    : integer := 32;  -- number of bits in an instruction
-            W    : integer := 19); -- number of instructions
+            W    : integer := 21); -- number of instructions
    port( pc      : in std_logic_vector (N-1 downto 0);  -- program counter
          instr   : out std_logic_vector(M-1 downto 0)); -- instructions
 end ROM;
@@ -40,7 +40,10 @@ architecture behavior of ROM is
     X"00000000", -- Dummy instructions, these should not be executed.
     X"00000000",
     -- jmp_target: Jump target, address 0x0000004A, 18 << 2.
-    X"00000000"
+    X"00000000",
+    -- LUI Test
+    X"3c091001", -- lui $9, 4097 [numbers]   ; la $t1, numbers 
+    X"21292002"  -- addi $9, $9, 8194        ; addi $t1, $t1, 8094 
   );
                                     
 begin

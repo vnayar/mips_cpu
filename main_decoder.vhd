@@ -48,33 +48,41 @@ ENTITY MainDecoder IS
     -- Controls where the input to the PC comes from
     --   0 see 'branch'
     --   1 use the immediate from a 'jump' instruction
-    jump : out std_logic
+    jump : out std_logic;
+
+    -- Shift Immediate
+    --   0 leave the immediate alone
+    --   1 left shift the immediate 8 bits
+    shift_imm : out std_logic
   );
 END MainDecoder;
 
 -- Control the various mux and alu components for different instructions.
---   Instruction  Opcode  reg_wr_en  reg_dst  alu_src  branch  bzf ram_wr_en  ram_to_reg  alu_op  jump
---   R-Type       000000          1        1        0       0    X         0           0     011     0
---   addi         001000          1        0        1       0    X         0           0     000     0
---   ori          001101          1        0        1       0    X         0           0     010     0
---   lw           100011          1        0        1       0    X         0           1     000     0
---   sw           101011          0        X        1       0    X         1           X     000     0
---   beq          000100          0        X        0       1    1         0           X     001     0
---   bne          000101          0        X        0       1    0         0           X     001     0
---   j            000010          0        X        X       X    X         0           X     XXX     1
+--   Instruction  Opcode  reg_wr_en  reg_dst  alu_src  branch  bzf ram_wr_en  ram_to_reg  alu_op  jump  shift_imm
+--   R-Type       000000          1        1        0       0    X         0           0     011     0          0
+--   addi         001000          1        0        1       0    X         0           0     000     0          0
+--   ori          001101          1        0        1       0    X         0           0     010     0          0
+--   lw           100011          1        0        1       0    X         0           1     000     0          0
+--   sw           101011          0        X        1       0    X         1           X     000     0          X
+--   beq          000100          0        X        0       1    1         0           X     001     0          X
+--   bne          000101          0        X        0       1    0         0           X     001     0          X
+--   j            000010          0        X        X       X    X         0           X     XXX     1          X
+--   lui          001111          1        0        1       0    X         0           0     010     0          1
 ARCHITECTURE synth OF MainDecoder IS
 BEGIN
-  reg_wr_en <= '1' when (opcode = "000000") or (opcode = "100011") or (opcode = "001000") or (opcode = "001101") else '0';
+  reg_wr_en <= '1' when (opcode = "000000") or (opcode = "100011") or (opcode = "001000") or
+                        (opcode = "001101") or (opcode = "001111") else '0';
   reg_dst <= '1' when (opcode = "000000") else '0';
-  alu_src <= '1' when (opcode = "001000") or (opcode = "100011") or (opcode = "101011") else '0';
+  alu_src <= '1' when (opcode = "001000") or (opcode = "100011") or (opcode = "101011") or (opcode = "001111") else '0';
   branch <= '1' when (opcode (5 downto 1) = "00010") else '0';
   bzf <= '1' when (opcode (0) = '0') else '0';
   ram_wr_en <= '1' when (opcode = "101011") else '0';
   ram_to_reg <= '1' when (opcode = "100011") else '0';
   alu_op <= "001" when (opcode (5 downto 1) = "00010") else -- sub (for beq)
-            "010" when (opcode = "001101") else -- ori
+            "010" when (opcode = "001101") or (opcode = "001111") else -- ori
             "011" when (opcode = "000000") else -- R-Type
             "000" when (opcode = "001000") else -- addi
             "000";
   jump <= '1' when (opcode = "000010") else '0';
+  shift_imm <= '1' when (opcode = "001111") else '0';
 END;

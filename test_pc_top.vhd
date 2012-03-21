@@ -25,7 +25,8 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
       ram_to_reg : out std_logic;
       branch : out std_logic;
       bzf : out std_logic;
-      jump : out std_logic
+      jump : out std_logic;
+      shift_imm : out std_logic
     );
   END COMPONENT;
 
@@ -74,6 +75,17 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
     );
   END COMPONENT;
 
+  COMPONENT lshift IS
+    GENERIC (
+      S : positive := 32; -- the size of the value
+      SH : positive := 8  -- the amount to left shift by
+    );
+    PORT (
+      sh_in : in std_logic_vector (S - 1 downto 0);
+      sh_out : out std_logic_vector (S - 1 downto 0)
+    );
+  END COMPONENT;
+
   COMPONENT registerfile is
     PORT (
       resetb : in std_logic;
@@ -117,14 +129,19 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
   END COMPONENT;
   
 
+  -- Program Counter related signals
   signal pc : std_logic_vector (31 downto 0);
   signal pc_plus : std_logic_vector (31 downto 0);
   signal pc_inc : std_logic_vector (31 downto 0);
   signal pc_branch_addr : std_logic_vector (31 downto 0);
   signal pc_next : std_logic_vector (31 downto 0);
+  signal pc_jump : std_logic_vector (31 downto 0);
+  -- ROM Output
   signal instr : std_logic_vector (31 downto 0);
   -- The immediate part of the instruction expanded.
   signal sign_imm : std_logic_vector (31 downto 0);
+  signal shift8_imm : std_logic_vector (31 downto 0);
+  signal imm : std_logic_vector (31 downto 0);
   signal sign_imm_shift2 : std_logic_vector (31 downto 0);
   -- The read-data from the register-file.
   signal rd1 : std_logic_vector (31 downto 0);
@@ -149,7 +166,7 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
   signal pc_src : std_logic;
   signal pc_branch_plus : std_logic_vector (31 downto 0);
   signal jump : std_logic;
-  signal pc_jump : std_logic_vector (31 downto 0);
+  signal shift_imm : std_logic;
 
 BEGIN
   -- R-Type Instruction (000000 opcodes):
@@ -172,7 +189,8 @@ BEGIN
     ram_to_reg => ram_to_reg,
     branch => branch,
     bzf => bzf,
-    jump => jump
+    jump => jump,
+    shift_imm => shift_imm
   );
 
   pc_inc <= X"00000004";
@@ -251,6 +269,17 @@ BEGIN
     sign_imm => sign_imm
   );
 
+  -- Shifts the instruction immediate left by 8-bits
+  shift8_imm_shifter : lshift
+  generic map (
+    S => 32,
+    SH => 16
+  )
+  port map (
+    sh_in => sign_imm,
+    sh_out => shift8_imm
+  );
+
   -- Convert immediate to instruction number by left-shifting by 2.
   sign_imm_shift2 <= sign_imm (29 downto 0) & "00";
 
@@ -279,6 +308,18 @@ BEGIN
     y => write_reg
   );
 
+  -- Controls if the instruction immediate will be shifted up (for lui)
+  sign_shift8_imm_mux : Mux2
+  generic map (
+    size => 32
+  )
+  port map (
+    d0 => sign_imm,
+    d1 => shift8_imm,
+    s => shift_imm,
+    y => imm
+  );
+
   -- Controls if 'rt' or the instruction immediate will go to the ALU
   alu_src_mux : Mux2
   generic map (
@@ -286,7 +327,7 @@ BEGIN
   )
   port map (
     d0 => rd2,
-    d1 => sign_imm,
+    d1 => imm,
     s => alu_src,
     y => src_b
   );

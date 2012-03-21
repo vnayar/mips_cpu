@@ -15,7 +15,8 @@ ENTITY ControlUnit IS
     ram_to_reg : out std_logic;
     branch : out std_logic;
     bzf : out std_logic;
-    jump : out std_logic
+    jump : out std_logic;
+    shift_imm : out std_logic
   );
 END ControlUnit;
 
@@ -33,7 +34,8 @@ ARCHITECTURE struct of ControlUnit IS
       reg_wr_en : out std_logic;
       -- Provide high level controls to ALU Decoder.
       alu_op : out std_logic_vector (2 downto 0);
-      jump : out std_logic
+      jump : out std_logic;
+      shift_imm : out std_logic
     );
   END COMPONENT;
   
@@ -63,7 +65,8 @@ BEGIN
     reg_dst => reg_dst,
     reg_wr_en => reg_wr_en,
     alu_op => alu_op,
-    jump => jump
+    jump => jump,
+    shift_imm => shift_imm
   );
 
   alu_decoder : ALUDecoder
