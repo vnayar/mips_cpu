@@ -1,3 +1,8 @@
+----
+-- Test-Bench MIPS
+-- The top-level entity for testing the MIPS CPU.
+----
+
 LIBRARY ieee ;
 USE ieee.std_logic_1164.all ;
 USE ieee.std_logic_unsigned.all ;
@@ -9,13 +14,27 @@ END;
 
 ARCHITECTURE structure of tb_mips IS
 signal  clk    : STD_LOGIC;
-Signal  resetb  : STD_LOGIC;
+signal  resetb  : STD_LOGIC;
 
---COMPONENT mipstop
-COMPONENT test_pc_top
+signal instr : std_logic_vector (31 downto 0);
+signal pc : std_logic_vector (31 downto 0);
+
+COMPONENT ROM is
+   generic( N    : integer := 32;  -- number of address bits
+            M    : integer := 32;  -- number of bits in a word (instruction)
+            W    : integer := 27;  -- number of words (instructions)
+            F    : string := "./test_suite.dat");
+   port( pc      : in std_logic_vector (N-1 downto 0);  -- program counter
+         instr   : out std_logic_vector(M-1 downto 0)); -- instructions
+END COMPONENT;
+
+COMPONENT mips_top
   PORT (
     resetb: in STD_LOGIC;
-    clk: in STD_LOGIC
+    clk: in STD_LOGIC;
+    -- Plug in our ROM chip.
+    instr : in std_logic_vector (31 downto 0);
+    pc : out std_logic_vector (31 downto 0)
   );
 END COMPONENT;
 
@@ -27,11 +46,18 @@ COMPONENT tb_mips_generator
 END COMPONENT;
 
 BEGIN
-  --UUT: mipstop
-  UUT: test_pc_top
+  ROM1: ROM
+  PORT MAP (
+    pc => pc,
+    instr => instr
+  );
+
+  UUT: mips_top
   PORT Map (
     clk     => clk,
-    resetb  => resetb
+    resetb  => resetb,
+    instr => instr,
+    pc => pc
   );
   
   Gen: tb_mips_generator

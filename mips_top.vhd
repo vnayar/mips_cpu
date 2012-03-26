@@ -3,14 +3,17 @@ USE ieee.std_logic_1164.all ;
 USE ieee.std_logic_unsigned.all ;
 
 -- Set up the main component to test the Program Counter.
-ENTITY test_pc_top IS
+ENTITY mips_top IS
   PORT (
     resetb : in std_logic;
-    clk : in std_logic
+    clk : in std_logic;
+    -- Plug in our ROM chip.
+    instr : in std_logic_vector (31 downto 0);
+    pc : buffer std_logic_vector (31 downto 0)
   );
 END;
 
-ARCHITECTURE pc_test_arch of test_pc_top IS
+ARCHITECTURE synth of mips_top IS
   COMPONENT ControlUnit IS
     PORT (
       opcode : in std_logic_vector (5 downto 0);
@@ -130,14 +133,11 @@ ARCHITECTURE pc_test_arch of test_pc_top IS
   
 
   -- Program Counter related signals
-  signal pc : std_logic_vector (31 downto 0);
   signal pc_plus : std_logic_vector (31 downto 0);
   signal pc_inc : std_logic_vector (31 downto 0);
   signal pc_branch_addr : std_logic_vector (31 downto 0);
   signal pc_next : std_logic_vector (31 downto 0);
   signal pc_jump : std_logic_vector (31 downto 0);
-  -- ROM Output
-  signal instr : std_logic_vector (31 downto 0);
   -- The immediate part of the instruction expanded.
   signal sign_imm : std_logic_vector (31 downto 0);
   signal shift8_imm : std_logic_vector (31 downto 0);
@@ -239,12 +239,6 @@ BEGIN
     src_a => pc,
     src_b => pc_inc,
     sum => pc_plus
-  );
-
-  ROM1 : ROM
-  port map (
-    pc => pc,
-    instr => instr
   );
 
   reg1 : registerfile
@@ -366,4 +360,4 @@ BEGIN
   );
 
 
-END pc_test_arch;
+END synth;

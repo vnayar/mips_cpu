@@ -5,7 +5,7 @@ add wave -noupdate /tb_mips/resetb
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/PCounter1/pc_in
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/PCounter1/pc_out
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/PCPlus/sum
-add wave -noupdate -radix hexadecimal /tb_mips/UUT/ROM1/instr
+add wave -noupdate -radix hexadecimal /tb_mips/ROM1/instr
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/signex1/instr_imm
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/signex1/sign_imm
 add wave -noupdate -radix hexadecimal /tb_mips/UUT/reg1/ra2

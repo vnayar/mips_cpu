@@ -1,0 +1,36 @@
+-- LW Test
+8c0a0004 --  lw $10, 0x04($0)
+8c0b0008 --  lw $11, 0x08($0)
+-- SW Test
+ac0b0004 -- sw $11, 0x04($0)
+ac0a0008 -- sw $10, 0x08($0)
+-- Addition Test
+20080003 -- addi $8, $0, 3           ; 3: addi $t0, $0, 3 
+20090005 -- addi $9, $0, 5           ; 4: addi $t1, $0, 5 
+01095020 -- add $10, $8, $9          ; 5: add $t2, $t0, $t1 
+-- Branch Test (beq)
+20080004 -- addi $8, $0, 4           ; 3: addi $t0, $0, 4 
+20090005 -- addi $9, $0, 5           ; 4: addi $t1, $0, 5 
+21080001 -- addi $8, $8, 1           ; 7: add $t0, $t0, 1 
+1109ffff -- beq $8, $9, -4 [inc-0x00400030]; 8: beq $t0, $t1, inc 
+-- Branch Test (bne)
+20080002 -- addi $8, $0, 2           ; 15: add $t0, $0, 2 
+20090004 -- addi $9, $0, 4           ; 16: add $t1, $0, 4 
+21080001 -- addi $8, $8, 1           ; 19: add $t0, $t0, 1 
+1509ffff -- bne $8, $9, -4 [inc2-0x00400040]
+-- Jump Test
+08000012 -- j jump_target [0x00000012]
+00000000 -- Dummy instructions, these should not be executed.
+00000000
+-- jmp_target: Jump target, address 0x0000004A, 18 << 2.
+00000000
+-- LUI Test
+3c091001 -- lui $9, 4097 [numbers]   ; la $t1, numbers 
+21292002 -- addi $9, $9, 8194        ; addi $t1, $t1, 8094 
+-- SLT Test
+20080005 -- addi $8, $0, 5           ; 1: addi $t0, $0, 5 
+20090007 -- addi $9, $0, 7           ; 2: addi $t1, $0, 7 
+0109502a -- slt $10, $8, $9          ; 3: slt $t2, $t0, $t1 
+0128502a -- slt $10, $9, $8          ; 4: slt $t2, $t1, $t0 
+290a0007 -- slti $10, $8, 7          ; 5: slti $t2, $t0, 7 
+292a0005 -- slti $10, $9, 5          ; 6: slti $t2, $t1, 5 

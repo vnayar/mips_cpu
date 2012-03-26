@@ -1,63 +1,86 @@
+----
+-- ROM for instruction memory.
+-- This module is built to load the contents of a file.
+----
+
 library ieee;
 use ieee.std_logic_1164.all;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+library std;
+use STD.TEXTIO.all;
  
 entity ROM is
    generic( N    : integer := 32;  -- number of address bits
-            M    : integer := 32;  -- number of bits in an instruction
-            W    : integer := 27); -- number of instructions
+            M    : integer := 32;  -- number of bits in a word (instruction)
+            W    : integer := 27;  -- number of words (instructions)
+            F    : string := "./test_suite.dat");
    port( pc      : in std_logic_vector (N-1 downto 0);  -- program counter
          instr   : out std_logic_vector(M-1 downto 0)); -- instructions
 end ROM;
 
 architecture behavior of ROM is
 
-  type Vector_array is array (0 to W-1) of std_logic_vector(M-1 downto 0);
-  constant Memory : Vector_array := (
-    -- LW Test
-    X"8c0a0004", --  lw $10, 0x04($0)
-    X"8c0b0008", --  lw $11, 0x08($0)
-    -- SW Test
-    X"ac0b0004", -- sw $11, 0x04($0)
-    X"ac0a0008", -- sw $10, 0x08($0)
-    -- Addition Test
-    X"20080003", -- addi $8, $0, 3           ; 3: addi $t0, $0, 3 
-    X"20090005", -- addi $9, $0, 5           ; 4: addi $t1, $0, 5 
-    X"01095020", -- add $10, $8, $9          ; 5: add $t2, $t0, $t1 
-    -- Branch Test (beq)
-    X"20080004", -- addi $8, $0, 4           ; 3: addi $t0, $0, 4 
-    X"20090005", -- addi $9, $0, 5           ; 4: addi $t1, $0, 5 
-    X"21080001", -- addi $8, $8, 1           ; 7: add $t0, $t0, 1 
-    X"1109ffff", -- beq $8, $9, -4 [inc-0x00400030]; 8: beq $t0, $t1, inc 
-    -- Branch Test (bne)
-    X"20080002", -- addi $8, $0, 2           ; 15: add $t0, $0, 2 
-    X"20090004", -- addi $9, $0, 4           ; 16: add $t1, $0, 4 
-    X"21080001", -- addi $8, $8, 1           ; 19: add $t0, $t0, 1 
-    X"1509ffff", -- bne $8, $9, -4 [inc2-0x00400040]
-    -- Jump Test
-    X"08000012", -- j jump_target [0x00000012]
-    X"00000000", -- Dummy instructions, these should not be executed.
-    X"00000000",
-    -- jmp_target: Jump target, address 0x0000004A, 18 << 2.
-    X"00000000",
-    -- LUI Test
-    X"3c091001", -- lui $9, 4097 [numbers]   ; la $t1, numbers 
-    X"21292002", -- addi $9, $9, 8194        ; addi $t1, $t1, 8094 
-    -- SLT Test
-    X"20080005", -- addi $8, $0, 5           ; 1: addi $t0, $0, 5 
-    X"20090007", -- addi $9, $0, 7           ; 2: addi $t1, $0, 7 
-    X"0109502a", -- slt $10, $8, $9          ; 3: slt $t2, $t0, $t1 
-    X"0128502a", -- slt $10, $9, $8          ; 4: slt $t2, $t1, $t0 
-    X"290a0007", -- slti $10, $8, 7          ; 5: slti $t2, $t0, 7 
-    X"292a0005"  -- slti $10, $9, 5          ; 6: slti $t2, $t1, 5 
-  );
-                                    
+
 begin
-  
- -- Ignore the 2 least significant bits.
- instr <= Memory(conv_integer(pc (31 downto 2)));
- 
+  process is
+    -- File reading variables
+    file mem_file : TEXT;
+    variable L : line;
+    variable ch : character;
+    variable index, result : integer;
+    -- The actual RAM data
+    type Vector_array is array (0 to W-1) of std_logic_vector(M-1 downto 0);
+    variable Memory : Vector_array;
+
+    variable print_line : line;
+
+  begin
+    -- initialize memory from file
+    for i in 0 to W - 1 loop
+      Memory(conv_integer(i)) := conv_std_logic_vector(0, M);
+    end loop;
+
+    index := 0;
+
+    FILE_OPEN(mem_file, F, READ_MODE);
+    parse_line: while not endfile(mem_file) loop
+      readline(mem_file, L);
+      result := 0;
+      for i in 1 to 8 loop
+        read(L, ch);
+
+        -- Treat lines starting with '--' as comments.
+        if (i = 1 and ch = '-') then
+            next parse_line;
+        end if;
+
+        if '0' <= ch and ch <= '9' then
+          result := result*16 + character'pos(ch) - character'pos('0');
+        elsif 'a' <= ch and ch <= 'f' then
+          result := result*16 + character'pos(ch) - character'pos('a') + 10;
+        else
+          report "Format error on line " & integer'image(index) severity error;
+        end if;
+      end loop;
+
+      write(print_line, string'("Writing line ") & integer'image(index) &
+                        string'(": ") & integer'image(result));
+      writeline(output, print_line);
+      Memory(index) := conv_std_logic_vector(result, 32);
+      index := index + 1;
+
+    end loop;
+
+    -- In VHDL, processes are simultaneous, so we must add the normal
+    -- logic after the initialization logic in the same process.
+    loop
+      -- Ignore the 2 least significant bits.
+      instr <= Memory(conv_integer(pc (31 downto 2)));
+      wait on pc;
+    end loop;
+  end process;
 end behavior;
 
 
