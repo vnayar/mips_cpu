@@ -1,0 +1,66 @@
+3c011000  lui $1, 4096 [numbers_len]; 20: la $t1, numbers_len 
+34290028  ori $9, $1, 40 [numbers_len] 
+20080028  addi $8, $0, 40          ; 21: addi $t0, $0, 40 
+ad280000  sw $8, 0($9)             ; 22: sw $t0, ($t1) 
+3c011000  lui $1, 4096 [numbers]   ; 24: la $t1, numbers 
+34290000  ori $9, $1, 0 [numbers] 
+20080005  addi $8, $0, 5           ; 26: addi $t0, $0, 5 
+ad280000  sw $8, 0($9)             ; 27: sw $t0, 0($t1) # numbers[0] = 5 
+20080007  addi $8, $0, 7           ; 28: addi $t0, $0, 7 
+ad280004  sw $8, 4($9)             ; 29: sw $t0, 4($t1) # numbers[1] = 7 
+20080003  addi $8, $0, 3           ; 30: addi $t0, $0, 3 
+ad280008  sw $8, 8($9)             ; 31: sw $t0, 8($t1) # numbers[2] = 3 
+20080002  addi $8, $0, 2           ; 32: addi $t0, $0, 2 
+ad28000c  sw $8, 12($9)            ; 33: sw $t0, 12($t1) # numbers[3] = 2 
+20080009  addi $8, $0, 9           ; 34: addi $t0, $0, 9 
+ad280010  sw $8, 16($9)            ; 35: sw $t0, 16($t1) # numbers[4] = 9 
+20080004  addi $8, $0, 4           ; 36: addi $t0, $0, 4 
+ad280014  sw $8, 20($9)            ; 37: sw $t0, 20($t1) # numbers[5] = 4 
+20080001  addi $8, $0, 1           ; 38: addi $t0, $0, 1 
+ad280018  sw $8, 24($9)            ; 39: sw $t0, 24($t1) # numbers[6] = 1 
+20080008  addi $8, $0, 8           ; 40: addi $t0, $0, 8 
+ad28001c  sw $8, 28($9)            ; 41: sw $t0, 28($t1) # numbers[7] = 8 
+20080006  addi $8, $0, 6           ; 42: addi $t0, $0, 6 
+ad280020  sw $8, 32($9)            ; 43: sw $t0, 32($t1) # numbers[8] = 6 
+20080000  addi $8, $0, 0           ; 44: addi $t0, $0, 0 
+ad280024  sw $8, 36($9)            ; 45: sw $t0, 36($t1) # numbers[9] = 0 
+3c011000  lui $1, 4096 [numbers]   ; 49: la $t0, numbers 
+34280000  ori $8, $1, 0 [numbers] 
+3c011000  lui $1, 4096             ; 50: lw $t9, numbers_len # numbers.length 
+8c390028  lw $25, 40($1)          
+0119c820  add $25, $8, $25         ; 51: add $t9, $t0, $t9 
+0119082a  slt $1, $8, $25          ; 53: blt $t0, $t9, body_for_i 
+14200002  bne $1, $0, 8 [body_for_i-0x004000a4] 
+10000014  beq $0, $0, 80 [end_for_i-0x004000a8]
+00084821  addu $9, $0, $8          ; 57: move $t1, $t0 
+8d0a0000  lw $10, 0($8)            ; 59: lw $t2, ($t0) 
+210b0004  addi $11, $8, 4          ; 62: add $t3, $t0, 4 
+0179082a  slt $1, $11, $25         ; 64: blt $t3, $t9, body_for_j 
+14200002  bne $1, $0, 8 [body_for_j-0x004000bc] 
+10000009  beq $0, $0, 36 [end_for_j-0x004000c0]
+8d6c0000  lw $12, 0($11)           ; 68: lw $t4, ($t3) 
+018a082a  slt $1, $12, $10         ; 70: blt $t4, $t2, body_if_check 
+14200002  bne $1, $0, 8 [body_if_check-0x004000cc] 
+10000003  beq $0, $0, 12 [end_if_check-0x004000d0]
+000b4821  addu $9, $0, $11         ; 74: move $t1, $t3 
+000c5021  addu $10, $0, $12        ; 76: move $t2, $t4 
+216b0004  addi $11, $11, 4         ; 80: add $t3, $t3, 4 # j++ 
+1000fff6  beq $0, $0, -40 [cond_for_j-0x004000e0]
+8d0d0000  lw $13, 0($8)            ; 84: lw $t5, ($t0) 
+ad0a0000  sw $10, 0($8)            ; 86: sw $t2, ($t0) 
+ad2d0000  sw $13, 0($9)            ; 88: sw $t5, ($t1) 
+21080004  addi $8, $8, 4           ; 90: addi $t0, $t0, 4 # i++ 
+1000ffeb  beq $0, $0, -84 [cond_for_i-0x004000f4]
+3c011000  lui $1, 4096 [numbers]   ; 95: la $t0, numbers 
+34280000  ori $8, $1, 0 [numbers] 
+3c011000  lui $1, 4096             ; 96: lw $t9, numbers_len 
+8c390028  lw $25, 40($1)          
+0119c820  add $25, $8, $25         ; 97: add $t9, $t0, $t9 
+0119082a  slt $1, $8, $25          ; 99: blt $t0, $t9, body_for_show 
+14200002  bne $1, $0, 8 [body_for_show-0x00400110] 
+10000004  beq $0, $0, 16 [end_for_show-0x00400114]
+8d100000  lw $16, 0($8)            ; 102: lw $s0, ($t0) 
+21080004  addi $8, $8, 4           ; 103: addi $t0, $t0, 4 
+1000fffb  beq $0, $0, -20 [cond_for_show-0x00400120]
+3402000a  ori $2, $0, 10           ; 108: li $v0, 10 # syscall 10 is exit 
+0000000c  syscall                  ; 109: syscall 
