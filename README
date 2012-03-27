@@ -5,6 +5,7 @@ model that is ubiquitous these days.
 
 Most of the code is written using VHDL (I may convert to Verilog later).
 
+
 Tools:
   MIPS Simulator:  QtSpim
     http://spimsimulator.sourceforge.net/
@@ -12,4 +13,31 @@ Tools:
     http://www.altera.com/products/software/quartus-ii/modelsim/qts-modelsim-index.html
   Diagram Generation:  Altera Quartus II / RTL Viewer
     https://www.altera.com/download/software/quartus-ii-we/11.1sp1
-    
+
+
+Running the Test Bench:
+1. Run Altera ModelSim:
+  $ ~/altera/11.1/modelsim/linux/vsim
+2. Compile the test-bench entities.
+  > do compile.do
+2. In the Transcript, load the Test Bench top-level entity.
+  > vsim tb_mips
+3. After the simulator view begins, load the waveforms.
+  > do wave.do
+4. Start the simulation.
+  > run 500 ns
+  There will be an error at the end when the PC goes past the last instruction.
+
+
+Running the Sort Algorithm:
+1. Run Altera ModelSim:
+  $ ~/altera/11.1/modelsim/linux/vsim
+2. Compile the test-bench entities.
+  > do sort_compile.do
+2. In the Transcript, load the Test Bench top-level entity.
+  > vsim sort_mips
+3. After the simulator view begins, load the waveforms.
+  > do sort_wave.do
+4. Start the simulation.
+  > run 1000 ns
+  There will be an error at the end when the PC goes past the last instruction.
