@@ -1,0 +1,16 @@
+work
+db
+incremental_db
+transcript
+*.ini
+*.qpf
+*.pin
+*.pof
+*.qsf
+*.sof
+*.rpt
+*.jdi
+*.summary
+*.done
+*.vstf
+*.wlf
