@@ -75,7 +75,7 @@ BEGIN
                         (opcode = "001101") or (opcode = "001111") or (opcode = "001010") else '0';
   reg_dst <= '1' when (opcode = "000000") else '0';
   alu_src <= '1' when (opcode = "001000") or (opcode = "100011") or (opcode = "101011") or
-                      (opcode = "001111") or (opcode = "001010") else '0';
+                      (opcode = "001111") or (opcode = "001010") or (opcode = "001101") else '0';
   branch <= '1' when (opcode (5 downto 1) = "00010") else '0';
   bzf <= '1' when (opcode (0) = '0') else '0';
   ram_wr_en <= '1' when (opcode = "101011") else '0';

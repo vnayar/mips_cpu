@@ -118,16 +118,15 @@ ARCHITECTURE synth of mips_top IS
 
   COMPONENT RAM
     GENERIC (
-      N      : positive := 30; -- number of addrress bits
-      M      : positive := 32;  -- number of data bits
-      W      : positive := 3   -- # of words in the memory
-    );
+      N      : positive := 8; -- number of addrress bits
+      W      : positive := 32 -- word size
+      );
     PORT (
       ram_wr_en    : in  std_logic; -- write enable
       clk          : in  std_logic; -- clock
       ram_addr     : in  std_logic_vector (N - 1 downto 0);
-      ram_din      : in  std_logic_vector (M - 1 downto 0);
-      ram_dout     : out std_logic_vector (M - 1 downto 0)
+      ram_din      : in  std_logic_vector (W - 1 downto 0);
+      ram_dout     : out std_logic_vector (W - 1 downto 0)
     );
   END COMPONENT;
   
@@ -342,7 +341,7 @@ BEGIN
     ram_wr_en => ram_wr_en,
     clk => clk,
     -- The ALU computes the address, data is read word (4 bytes) at a time.
-    ram_addr => alu_result (31 downto 2),
+    ram_addr => alu_result (7 downto 0),
     ram_din => rd2,
     ram_dout => ram_dout
   );

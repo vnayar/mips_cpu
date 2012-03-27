@@ -51,7 +51,7 @@ init_for_i:
   add $t9, $t0, $t9
 cond_for_i:
   blt $t0, $t9, body_for_i 
-  b end_for_i
+  beq $0, $0, end_for_i
 body_for_i:
 #   int min = i;
   move $t1, $t0
@@ -62,13 +62,13 @@ init_for_j:
   add $t3, $t0, 4
 cond_for_j:
   blt $t3, $t9, body_for_j
-  b end_for_j
+  beq $0, $0, end_for_j
 body_for_j:
 #     int check_val = numbers[j];
   lw $t4, ($t3)
 #     if (check_val < min_val) {
   blt $t4, $t2, body_if_check
-  b end_if_check
+  beq $0, $0, end_if_check
 body_if_check:
 #       min = j;
   move $t1, $t3
@@ -78,7 +78,7 @@ body_if_check:
 end_if_check:
 #   }
   add $t3, $t3, 4  # j++
-  b cond_for_j
+  beq $0, $0, cond_for_j
 end_for_j:
 #   int temp_val = numbers[i];
   lw $t5, ($t0)
@@ -88,9 +88,23 @@ end_for_j:
   sw $t5, ($t1)
 # }
   addi $t0, $t0, 4  # i++
-  b cond_for_i
+  beq $0, $0, cond_for_i
 end_for_i:
+
+# Now iterate through our numbers.
+  la $t0, numbers
+  lw $t9, numbers_len
+  add $t9, $t0, $t9
+cond_for_show:
+  blt $t0, $t9, body_for_show
+  beq $0, $0, end_for_show
+body_for_show:
+  lw $s0, ($t0)
+  addi $t0, $t0, 4
+  beq $0, $0, cond_for_show
+end_for_show:
+
 # exit()
-li $v0, 10  # syscall 10 is exit
-syscall
+  li $v0, 10  # syscall 10 is exit
+  syscall
 
