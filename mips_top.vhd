@@ -341,7 +341,7 @@ BEGIN
     ram_wr_en => ram_wr_en,
     clk => clk,
     -- The ALU computes the address, data is read word (4 bytes) at a time.
-    ram_addr => alu_result (7 downto 0),
+    ram_addr => alu_result (9 downto 2),
     ram_din => rd2,
     ram_dout => ram_dout
   );

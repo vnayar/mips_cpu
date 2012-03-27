@@ -23,6 +23,7 @@ END ALUDecoder;
 --      001       X       110 (subtract)
 --      010       X       001 (or)
 --      011  100000       010 (add)
+--      011  100001       010 (addu)
 --      011  100010       110 (subtract)
 --      011  100100       000 (and)
 --      011  100101       001 (or)
@@ -30,7 +31,7 @@ END ALUDecoder;
 --      111       X       111 (set less than)
 ARCHITECTURE synth OF ALUDecoder IS
 BEGIN
-  alu_ctrl <= "010" when (alu_op = "000") or ((alu_op = "011") and (funct = "100000")) else
+  alu_ctrl <= "010" when (alu_op = "000") or ((alu_op = "011") and (funct (5 downto 1) = "10000")) else
               "110" when (alu_op = "001") or ((alu_op = "011") and (funct = "100010")) else
               "000" when ((alu_op = "011") and (funct = "100100")) else
               "001" when (alu_op = "010") or ((alu_op = "011") and (funct = "100101")) else
