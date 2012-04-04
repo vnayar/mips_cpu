@@ -1,18 +1,23 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.all;
+-------------------------------------------------------------------------------
+-- mux2.vhd
+-- Two-port multiplexer with fixed-size inputs.
+-------------------------------------------------------------------------------
 
-ENTITY Mux2 IS
-  GENERIC (
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity Mux2 is
+  generic (
     size : positive
-  );
-  PORT (
-    d0, d1 : in std_logic_vector (size - 1 downto 0);
-    s : in std_logic;
-    y : out std_logic_vector (size - 1 downto 0)
-  );
-END Mux2;
+    );
+  port (
+    d0, d1 : in  std_logic_vector (size - 1 downto 0);
+    s      : in  std_logic;
+    y      : out std_logic_vector (size - 1 downto 0)
+    );
+end Mux2;
 
-ARCHITECTURE synth OF Mux2 IS
-BEGIN
+architecture synth of Mux2 is
+begin
   y <= d0 when s = '0' else d1;
-END synth;
+end synth;

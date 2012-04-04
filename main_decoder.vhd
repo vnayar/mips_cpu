@@ -1,8 +1,14 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.all;
+-------------------------------------------------------------------------------
+-- main_decoder.vhd
+-- Contains specific logic for muxes and write-enables based upon the opcode.
+-------------------------------------------------------------------------------
 
-ENTITY MainDecoder IS
-  PORT (
+library ieee;
+use ieee.std_logic_1164.all;
+
+
+entity MainDecoder is
+  port (
     -- The leading opcode bits of the instruction.
     opcode : in std_logic_vector (5 downto 0);
 
@@ -54,8 +60,8 @@ ENTITY MainDecoder IS
     --   0 leave the immediate alone
     --   1 left shift the immediate 8 bits
     shift_imm : out std_logic
-  );
-END MainDecoder;
+    );
+end MainDecoder;
 
 -- Control the various mux and alu components for different instructions.
 --   Instruction  Opcode  reg_wr_en  reg_dst  alu_src  branch  bzf ram_wr_en  ram_to_reg  alu_op  jump  shift_imm
@@ -70,23 +76,30 @@ END MainDecoder;
 --   bne          000101          0        X        0       1    0         0           X     001     0          X
 --   j            000010          0        X        X       X    X         0           X     XXX     1          X
 --   lui          001111          1        0        1       0    X         0           0     010     0          1
-ARCHITECTURE synth OF MainDecoder IS
-BEGIN
-  reg_wr_en <= '1' when (opcode = "000000") or (opcode = "100011") or (opcode (5 downto 1) = "00100") or
-                        (opcode = "001101") or (opcode = "001111") or (opcode = "001010") else '0';
+architecture synth of MainDecoder is
+begin
+  reg_wr_en <= '1' when (opcode = "000000") or (opcode = "100011") or
+               (opcode (5 downto 1) = "00100") or (opcode = "001101") or
+               (opcode = "001111") or (opcode = "001010") else '0';
   reg_dst <= '1' when (opcode = "000000") else '0';
-  alu_src <= '1' when (opcode (5 downto 1) = "00100") or (opcode = "100011") or (opcode = "101011") or
-                      (opcode = "001111") or (opcode = "001010") or (opcode = "001101") else '0';
-  branch <= '1' when (opcode (5 downto 1) = "00010") else '0';
-  bzf <= '1' when (opcode (0) = '0') else '0';
-  ram_wr_en <= '1' when (opcode = "101011") else '0';
-  ram_to_reg <= '1' when (opcode = "100011") else '0';
-  alu_op <= "001" when (opcode (5 downto 1) = "00010") else -- sub (for beq)
-            "010" when (opcode = "001101") or (opcode = "001111") else -- ori
-            "011" when (opcode = "000000") else -- R-Type
-            "111" when (opcode = "001010") else -- slti
-            "000" when (opcode (5 downto 1) = "00100") else -- addi
+  alu_src <= '1' when (opcode (5 downto 1) = "00100") or (opcode = "100011") or
+             (opcode = "101011") or (opcode = "001111") or
+             (opcode = "001010") or (opcode = "001101") else '0';
+  branch     <= '1'   when (opcode (5 downto 1) = "00010") else '0';
+  bzf        <= '1'   when (opcode (0) = '0')              else '0';
+  ram_wr_en  <= '1'   when (opcode = "101011")             else '0';
+  ram_to_reg <= '1'   when (opcode = "100011")             else '0';
+  alu_op     <= "001" when (opcode (5 downto 1) = "00010")
+            else                        -- sub (for beq)
+            "010" when (opcode = "001101") or (opcode = "001111")
+            else                        -- ori
+            "011" when (opcode = "000000")
+            else                        -- R-Type
+            "111" when (opcode = "001010")
+            else                        -- slti
+            "000" when (opcode (5 downto 1) = "00100")
+            else                        -- addi
             "000";
-  jump <= '1' when (opcode = "000010") else '0';
+  jump      <= '1' when (opcode = "000010") else '0';
   shift_imm <= '1' when (opcode = "001111") else '0';
-END;
+end;

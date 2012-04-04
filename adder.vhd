@@ -1,21 +1,27 @@
+-------------------------------------------------------------------------------
+-- adder.vhd
+-- Simple adder for updating the Program Counter.
+-------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
- 
-ENTITY adder IS
-  GENERIC (
-    S : positive -- the size of the adder
-  );
-  PORT (
-    src_a : in std_logic_vector (S - 1 downto 0);
-    src_b : in std_logic_vector (S - 1 downto 0); 
-    sum : out std_logic_vector (S - 1 downto 0)
-  );
-END adder;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 
-ARCHITECTURE behavioral OF adder IS
-BEGIN
+
+entity adder is
+  generic (
+    S : positive                        -- the size of the adder
+    );
+  port (
+    src_a : in  std_logic_vector (S - 1 downto 0);
+    src_b : in  std_logic_vector (S - 1 downto 0);
+    sum   : out std_logic_vector (S - 1 downto 0)
+    );
+end adder;
+
+architecture behavioral of adder is
+begin
   sum <= src_a + src_b;
-END behavioral;
+end behavioral;
 

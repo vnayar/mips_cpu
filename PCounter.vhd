@@ -1,32 +1,38 @@
+-------------------------------------------------------------------------------
+-- PCounter.vhd
+-- Register that holds the current instruction address
+-------------------------------------------------------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
- 
-ENTITY PCounter IS
-  PORT (
-    clk : in std_logic;
-    resetb : in std_logic; 
-    pc_in : in std_logic_vector (31 downto 0);
-    pc_out : out std_logic_vector (31 downto 0)
-  );
-END PCounter;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 
-ARCHITECTURE behavioral OF PCounter IS
+
+entity PCounter is
+  port (
+    clk    : in  std_logic;
+    resetb : in  std_logic;
+    pc_in  : in  std_logic_vector (31 downto 0);
+    pc_out : out std_logic_vector (31 downto 0)
+    );
+end PCounter;
+
+architecture behavioral of PCounter is
 
   signal program_counter : std_logic_vector (31 downto 0);
- 
-BEGIN
+  
+begin
 
   pc_out <= program_counter;
 
-  PROCESS (clk, resetb)
-  BEGIN
-    IF (resetb = '0') THEN
+  process (clk, resetb)
+  begin
+    if (resetb = '0') then
       program_counter <= X"00000000";
-    ELSIF rising_edge(clk) THEN
+    elsif rising_edge(clk) then
       program_counter <= pc_in;
-    END IF;
-  END PROCESS;
+    end if;
+  end process;
 
-END behavioral;
+end behavioral;

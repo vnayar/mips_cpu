@@ -1,10 +1,14 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.all;
+-------------------------------------------------------------------------------
+-- alu_decoder.vhd
+-- Translates "alu_op" from the main_decoder into ALU controls.
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
 
-ENTITY ALUDecoder IS
-  PORT (
+entity ALUDecoder is
+  port (
     -- The leading opcode bits of the instruction.
-    funct : in std_logic_vector (5 downto 0);
+    funct  : in std_logic_vector (5 downto 0);
     -- The general type of operation from the MainDecoder.
     --   00  add
     --   01  subtract
@@ -14,8 +18,8 @@ ENTITY ALUDecoder IS
 
     -- Specify the arithmetic operator for the ALU.
     alu_ctrl : out std_logic_vector (2 downto 0)
-  );
-END ALUDecoder;
+    );
+end ALUDecoder;
 
 -- Decode the ALU operation to an ALU Control.
 --   alu_op   funct  alu_ctrl
@@ -29,12 +33,16 @@ END ALUDecoder;
 --      011  100101       001 (or)
 --      011  101010       111 (set less than)
 --      111       X       111 (set less than)
-ARCHITECTURE synth OF ALUDecoder IS
-BEGIN
-  alu_ctrl <= "010" when (alu_op = "000") or ((alu_op = "011") and (funct (5 downto 1) = "10000")) else
-              "110" when (alu_op = "001") or ((alu_op = "011") and (funct = "100010")) else
-              "000" when ((alu_op = "011") and (funct = "100100")) else
-              "001" when (alu_op = "010") or ((alu_op = "011") and (funct = "100101")) else
-              "111" when (alu_op = "111") or ((alu_op = "011") and (funct = "101010"));
-END;
+architecture synth of ALUDecoder is
+begin
+  alu_ctrl <= "010" when (alu_op = "000") or
+                  ((alu_op = "011") and (funct (5 downto 1) = "10000"))
+              else "110" when (alu_op = "001") or
+                  ((alu_op = "011") and (funct = "100010"))
+              else "000" when ((alu_op = "011") and (funct = "100100"))
+              else "001" when (alu_op = "010") or
+                  ((alu_op = "011") and (funct = "100101"))
+              else "111" when (alu_op = "111") or
+                  ((alu_op = "011") and (funct = "101010"));
+end;
 
